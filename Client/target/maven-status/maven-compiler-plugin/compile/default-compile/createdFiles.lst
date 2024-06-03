@@ -1,0 +1,10 @@
+com\ais\client\ManangementPanelController.class
+com\ais\client\App.class
+com\ais\client\LoginController.class
+com\ais\client\RegisterController.class
+com\ais\client\AdminRegistrationController.class
+com\ais\client\ManagementRegistrationController.class
+com\ais\client\AdminPanelController.class
+module-info.class
+com\ais\client\RecruitsPanelController.class
+com\ais\client\RecruitsRegistrationController.class
