@@ -10,6 +10,8 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.layout.Pane;
 
 /**
  * FXML Controller class
@@ -21,6 +23,64 @@ public class AdminPanelController implements Initializable {
     /**
      * Initializes the controller class.
      */
+    @FXML
+    private Pane AddRecruitsPane;
+
+    @FXML
+    private Pane UpdateRecruitsPane;
+
+    @FXML
+    private Pane myprofilePane;
+
+    @FXML
+    private Button otp;
+
+    @FXML
+    private Pane otpPane;
+
+    @FXML
+    private Button profile;
+
+    @FXML
+    private Button add_recruit;
+
+    @FXML
+    private Button update_recruit;
+
+    @FXML
+    void handleNav(ActionEvent event) {
+        if (event.getSource() == add_recruit) {
+            AddRecruitsPane.toFront();
+        } else if (event.getSource() == update_recruit) {
+            UpdateRecruitsPane.toFront();
+        } else if (event.getSource() == otp) {
+            otpPane.toFront();
+        } else if (event.getSource()
+                == profile) {
+            myprofilePane.toFront();
+        }
+    }
+
+    @FXML
+    void updateAccountHandler(ActionEvent event) {
+
+    }
+
+    @FXML
+    void saveRecruitHandler(ActionEvent event) {
+
+    }
+
+    @FXML
+    void updateRecruitHandler(ActionEvent event) {
+
+    }
+
+    @FXML
+    void searchRecruitHandler(ActionEvent event) {
+
+    }
+
     @FXML
     void logoutHandler(ActionEvent event) throws IOException {
         App.setRoot("Login");
