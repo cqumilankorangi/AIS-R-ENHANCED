@@ -28,7 +28,8 @@ public class RecruitsPanelController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
+         String[] departments = {"Software", "Aerospace", "Mechanical", "Electronics Engineering"};
+
     }
 
 }
