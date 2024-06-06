@@ -4,17 +4,28 @@
  */
 package com.ais.client;
 
+import com.ais.client.constraint.Constraints;
+import com.ais.model.AdminModel;
+import com.ais.model.ManagementModel;
+import com.ais.model.RecruitModel;
+import com.ais.util.Session;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 
 /**
  * FXML Controller class
@@ -27,37 +38,76 @@ public class LoginController implements Initializable {
     private Button RegisterButton;
 
     @FXML
-    private ComboBox<String> userType;
+    private ComboBox<String> cmbUserType;
+
+    @FXML
+    private PasswordField txtPassword;
+
+    @FXML
+    private TextField txtUserName;
+
+    private Socket socket = null;
+    private ObjectInputStream in = null;
+    private DataOutputStream out = null;
+    private ObjectOutputStream outObj = null;
 
     @FXML
     void loginHandler(ActionEvent event) throws IOException {
-        String selectedUserType = userType.getValue();
-        if (selectedUserType != null) {
+        String selectedUserType = cmbUserType.getValue();
+        if (null != selectedUserType) {
+            socket = new Socket(Constraints.SERVER_URL, Constraints.SERVER_PORT);
+            out = new DataOutputStream(socket.getOutputStream());
+            outObj = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
             switch (selectedUserType) {
                 case "Admin":
-                    // Successful login, navigate to AdminPanel
-                    showSuccessDialog("Admin");
                     try {
-                        App.setRoot("AdminPanel");
-                    } catch (IOException e) {
+                        AdminModel authenticate = new AdminModel(txtUserName.getText(), txtPassword.getText());
+                        out.writeUTF("LOGIN_ADMIN");
+                        out.flush();
+                        outObj.writeObject(authenticate);
+                        outObj.flush();
+                        AdminModel admin = (AdminModel) in.readObject();
+                        showSuccessDialog("Admin");
+                        if (null != admin) {
+                            Session.getInstance().setAdmin(admin);
+                            App.setRoot("AdminPanel");
+                        }
+                    } catch (IOException | ClassNotFoundException e) {
                         e.printStackTrace();
                     }
                     break;
                 case "Management":
-                    // Successful login, navigate to ManagementPanel
-                    showSuccessDialog("Management");
                     try {
-                        App.setRoot("ManagementPanel");
-                    } catch (IOException e) {
+                        ManagementModel authenticate = new ManagementModel(txtUserName.getText(), txtPassword.getText());
+                        out.writeUTF("LOGIN_MANAGEMENT");
+                        out.flush();
+                        outObj.writeObject(authenticate);
+                        outObj.flush();
+                        ManagementModel management = (ManagementModel) in.readObject();
+                        showSuccessDialog("Management");
+                        if (null != management) {
+                            Session.getInstance().setManagement(management);
+                            App.setRoot("ManagementPanel");
+                        }
+                    } catch (IOException | ClassNotFoundException e) {
                         e.printStackTrace();
                     }
                     break;
                 case "Recruit":
-                    // Successful login, navigate to RecruitsPanel
-                    showSuccessDialog("Recruit");
                     try {
-                        App.setRoot("RecruitsPanel");
-                    } catch (IOException e) {
+                        RecruitModel authenticate = new RecruitModel(txtUserName.getText(), txtPassword.getText());
+                        out.writeUTF("LOGIN_RECRUIT");
+                        out.flush();
+                        outObj.writeObject(authenticate);
+                        outObj.flush();
+                        RecruitModel recruit = (RecruitModel) in.readObject();
+//                        showSuccessDialog("Recruit");
+                        if (null != recruit) {
+                            Session.getInstance().setRecruit(recruit);
+                            App.setRoot("RecruitsPanel");
+                        }
+                    } catch (IOException | ClassNotFoundException e) {
                         e.printStackTrace();
                     }
                     break;
@@ -65,7 +115,6 @@ public class LoginController implements Initializable {
                     break;
             }
         } else {
-            // Failed login, show error dialog
             showErrorDialog("Login Error", "Please select a user type.");
         }
     }
@@ -80,7 +129,7 @@ public class LoginController implements Initializable {
         String[] qualifications = {"Admin", "Management", "Recruit"};
 
         // Set the items to the ComboBox
-        userType.setItems(FXCollections.observableArrayList(qualifications));
+        cmbUserType.setItems(FXCollections.observableArrayList(qualifications));
     }
 
     //Login sucess pop up
@@ -92,7 +141,7 @@ public class LoginController implements Initializable {
         alert.showAndWait();
     }
 
-      //Login error pop up
+    //Login error pop up
     private void showErrorDialog(String title, String message) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle(title);
