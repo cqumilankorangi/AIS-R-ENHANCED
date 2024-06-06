@@ -4,14 +4,23 @@
  */
 package com.ais.client;
 
+import com.ais.client.constraint.Constraints;
+import com.ais.model.AdminModel;
+import com.ais.model.ManagementModel;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 
 /**
  * FXML Controller class
@@ -24,10 +33,64 @@ public class ManagementRegistrationController implements Initializable {
      * Initializes the controller class.
      */
     @FXML
-    private ComboBox<String> position;
+    private ComboBox<String> cmbPosition;
+
+    @FXML
+    private TextField txtAddress;
+
+    @FXML
+    private TextField txtEmail;
+
+    @FXML
+    private TextField txtFullName;
+
+    @FXML
+    private TextField txtPassword;
+
+    @FXML
+    private TextField txtPhoneNo;
+
+    @FXML
+    private TextField txtUserName;
+
+    private Socket socket = null;
+    private ObjectInputStream in = null;
+    private DataOutputStream out = null;
+    private ObjectOutputStream outObj = null;
 
     @FXML
     void saveHandler(ActionEvent event) throws IOException {
+        try {
+            socket = new Socket(Constraints.SERVER_URL, Constraints.SERVER_PORT);
+            out = new DataOutputStream(socket.getOutputStream());
+            outObj = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
+
+            out.writeUTF("REGISTER");
+            out.flush();
+            showSuccessDialog("Management");
+
+            ManagementModel management = new ManagementModel(txtFullName.getText(), txtAddress.getText(),
+                    txtPhoneNo.getText(), txtEmail.getText(), txtUserName.getText(),
+                    txtPassword.getText(), cmbPosition.getValue());
+
+            outObj.writeObject(management);
+            outObj.flush();
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+            if (outObj != null) {
+                outObj.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
+        }
+
         App.setRoot("Login");
     }
 
@@ -36,7 +99,14 @@ public class ManagementRegistrationController implements Initializable {
         String[] positions = {"Full-time", "Part-time", "Volunteer"};
 
         // Set the items to the ComboBox
-        position.setItems(FXCollections.observableArrayList(positions));
+        cmbPosition.setItems(FXCollections.observableArrayList(positions));
     }
 
+    private void showSuccessDialog(String userType) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Register Successful");
+        alert.setHeaderText(null);
+        alert.setContentText("Contratulations, new " + userType + " has been registered!");
+        alert.showAndWait();
+    }
 }

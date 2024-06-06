@@ -3,20 +3,28 @@ package com.ais.tcpserver.util;
 import com.ais.model.AdminModel;
 import com.ais.model.ManagementModel;
 import com.ais.model.RecruitModel;
+import com.google.protobuf.TextFormat.ParseException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DBManager {
 
-    private static final String url = "jdbc:mysql://localhost:3306/car";
+    private static final String url = "jdbc:mysql://localhost:3306/ais-r-db";
     private static final String user = "root";
-    private static final String password = "kina";
+    private static final String password = "pass";
 
     private Connection connection;
 
@@ -27,6 +35,9 @@ public class DBManager {
     private void connect() throws SQLException {
         connection = DriverManager.getConnection(url, user, password);
         System.out.println("Connected to the MySQL database!");
+        createManagementTableIfNotExists();
+        createRecruitsTableIfNotExists();
+        createAdminTableIfNotExists();
     }
 
     public Connection getConnection() {
@@ -179,8 +190,8 @@ public class DBManager {
                     String interviewDate = rs.getString("interviewDate");
                     String qualificationLevel = rs.getString("qualificationLevel");
                     String department = rs.getString("department");
-                    recruit = new RecruitModel(id, fullName, address, phoneNo, email, 
-                            userName, pwd, interviewDate, qualificationLevel,department);
+                    recruit = new RecruitModel(id, fullName, address, phoneNo, email,
+                            userName, pwd, interviewDate, qualificationLevel, department);
                 }
             }
         } catch (SQLException e) {
@@ -207,7 +218,7 @@ public class DBManager {
                 String interviewDate = rs.getString("interviewDate");
                 String qualificationLevel = rs.getString("qualificationLevel");
                 String department = rs.getString("department");
-                recruit = new RecruitModel(id, fullName, address, phoneNo, email, 
+                recruit = new RecruitModel(id, fullName, address, phoneNo, email,
                         userName, pwd, interviewDate, qualificationLevel, department);
                 return recruit;
             } else {
@@ -334,6 +345,162 @@ public class DBManager {
             } catch (SQLException e) {
                 System.out.println("Failed to close connection: " + e.getMessage());
             }
+        }
+    }
+
+    public void createManagementTableIfNotExists() {
+        try (Statement stmt = connection.createStatement()) {
+            // Check if the table exists
+            ResultSet resultSet = stmt.executeQuery("SHOW TABLES LIKE 'management'");
+            String sql = "UPDATE management SET fullName = ?, address = ?, phoneNo = ?, email = ?, password = ?, position = ? WHERE userName = ? AND id = ?";
+            if (!resultSet.next()) {
+                // Table does not exist, create it
+                stmt.executeUpdate("CREATE TABLE management ("
+                        + "id INT AUTO_INCREMENT PRIMARY KEY,"
+                        + "fullName VARCHAR(255) NOT NULL,"
+                        + "address VARCHAR(255),"
+                        + "phoneNo VARCHAR(20),"
+                        + "email VARCHAR(255),"
+                        + "password VARCHAR(100),"
+                        + "position VARCHAR(100),"
+                        + "userName VARCHAR(100)"
+                        + ")");
+                System.out.println("Management table created successfully.");
+            } else {
+                System.out.println("Management table already exists.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createRecruitsTableIfNotExists() {
+        try (Statement stmt = connection.createStatement()) {
+            // Check if the table exists
+            ResultSet resultSet = stmt.executeQuery("SHOW TABLES LIKE 'recruits'");
+            if (!resultSet.next()) {
+                // Table does not exist, create it
+                stmt.executeUpdate("CREATE TABLE recruits ("
+                        + "id INT AUTO_INCREMENT PRIMARY KEY,"
+                        + "fullName VARCHAR(255) NOT NULL,"
+                        + "address VARCHAR(255),"
+                        + "phoneNo VARCHAR(20),"
+                        + "email VARCHAR(255),"
+                        + "userName VARCHAR(100),"
+                        + "password VARCHAR(100),"
+                        + "interviewDate DATE,"
+                        + "qualificationLevel VARCHAR(100),"
+                        + "department VARCHAR(100)"
+                        + ")");
+                System.out.println("Recruits table created successfully.");
+                uploadRecruitsDataFromCSV();
+            } else {
+                System.out.println("Recruits table already exists.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ParseException ex) {
+            Logger.getLogger(DBManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void createAdminTableIfNotExists() {
+        try (Statement stmt = connection.createStatement()) {
+            // Check if the table exists
+            ResultSet resultSet = stmt.executeQuery("SHOW TABLES LIKE 'admin'");
+            if (!resultSet.next()) {
+                // Table does not exist, create it
+                stmt.executeUpdate("CREATE TABLE admin ("
+                        + "id INT AUTO_INCREMENT PRIMARY KEY,"
+                        + "fullName VARCHAR(255) NOT NULL,"
+                        + "address VARCHAR(255),"
+                        + "phoneNo VARCHAR(20),"
+                        + "email VARCHAR(255),"
+                        + "userName VARCHAR(100),"
+                        + "password VARCHAR(100),"
+                        + "level VARCHAR(100),"
+                        + "branch VARCHAR(100)"
+                        + ")");
+                System.out.println("Admin table created successfully.");
+                uploadAdminDataFromCSV();
+            } else {
+                System.out.println("Admin table already exists.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void uploadRecruitsDataFromCSV() throws ParseException {
+        String sql = "INSERT INTO recruits (fullName, address, phoneNo, email, userName, password, interviewDate, qualificationLevel, department) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (BufferedReader br = new BufferedReader(new FileReader("recruits.csv")); PreparedStatement pstmt = connection.prepareStatement(sql)) {
+
+            String line;
+            br.readLine(); // Skip header line if exists
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+
+                // Parse and format interviewDate
+                String interviewDateStr = data[6]; // assuming interviewDate is at index 6 in CSV
+                SimpleDateFormat dateFormat = new SimpleDateFormat("d/MM/yyyy");
+                Date parsedDate = dateFormat.parse(interviewDateStr);
+                java.sql.Date interviewDate = new java.sql.Date(parsedDate.getTime());
+
+                // Set values to prepared statement
+                pstmt.setString(1, data[0]); // fullName
+                pstmt.setString(2, data[1]); // address
+                pstmt.setString(3, data[2]); // phoneNo
+                pstmt.setString(4, data[3]); // email
+                pstmt.setString(5, data[4]); // userName
+                pstmt.setString(6, data[5]); // password
+                pstmt.setDate(7, interviewDate); // interviewDate
+                pstmt.setString(8, data[7]); // qualificationLevel
+                pstmt.setString(9, data[8]); // department
+
+                pstmt.addBatch();
+            }
+
+            int[] batchResult = pstmt.executeBatch();
+            System.out.println("Uploaded " + batchResult.length + " records from CSV to recruits table.");
+
+        } catch (IOException | SQLException e) {
+            e.printStackTrace();
+        } catch (java.text.ParseException ex) {
+            Logger.getLogger(DBManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void uploadAdminDataFromCSV() {
+        String sql = "INSERT INTO admin (fullName, address, phoneNo, email, userName, password, level, branch) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (BufferedReader br = new BufferedReader(new FileReader("staff.csv")); PreparedStatement pstmt = connection.prepareStatement(sql)) {
+
+            String line;
+            br.readLine(); // Skip header line if exists
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+
+                // Set values to prepared statement
+                pstmt.setString(1, data[0]); // fullName
+                pstmt.setString(2, data[1]); // address
+                pstmt.setString(3, data[2]); // phoneNo
+                pstmt.setString(4, data[3]); // email
+                pstmt.setString(5, data[4]); // userName
+                pstmt.setString(6, data[5]); // password
+                pstmt.setString(7, data[6]); // level
+                pstmt.setString(8, data[7]); // branch
+
+                pstmt.addBatch();
+            }
+
+            int[] batchResult = pstmt.executeBatch();
+            System.out.println("Uploaded " + batchResult.length + " records from CSV to admin table.");
+
+        } catch (IOException | SQLException e) {
+            e.printStackTrace();
         }
     }
 }
