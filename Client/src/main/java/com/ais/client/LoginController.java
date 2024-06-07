@@ -20,8 +20,6 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
@@ -68,7 +66,6 @@ public class LoginController implements Initializable {
                         outObj.writeObject(authenticate);
                         outObj.flush();
                         AdminModel admin = (AdminModel) in.readObject();
-                        showSuccessDialog("Admin");
                         if (null != admin) {
                             Session.getInstance().setAdmin(admin);
                             App.setRoot("AdminPanel");
@@ -85,7 +82,6 @@ public class LoginController implements Initializable {
                         outObj.writeObject(authenticate);
                         outObj.flush();
                         ManagementModel management = (ManagementModel) in.readObject();
-                        showSuccessDialog("Management");
                         if (null != management) {
                             Session.getInstance().setManagement(management);
                             App.setRoot("ManagementPanel");
@@ -102,7 +98,6 @@ public class LoginController implements Initializable {
                         outObj.writeObject(authenticate);
                         outObj.flush();
                         RecruitModel recruit = (RecruitModel) in.readObject();
-//                        showSuccessDialog("Recruit");
                         if (null != recruit) {
                             Session.getInstance().setRecruit(recruit);
                             App.setRoot("RecruitsPanel");
@@ -114,8 +109,6 @@ public class LoginController implements Initializable {
                 default:
                     break;
             }
-        } else {
-            showErrorDialog("Login Error", "Please select a user type.");
         }
     }
 
@@ -130,24 +123,6 @@ public class LoginController implements Initializable {
 
         // Set the items to the ComboBox
         cmbUserType.setItems(FXCollections.observableArrayList(qualifications));
-    }
-
-    //Login sucess pop up
-    private void showSuccessDialog(String userType) {
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Login Successful");
-        alert.setHeaderText(null);
-        alert.setContentText("Welcome, " + userType + "!");
-        alert.showAndWait();
-    }
-
-    //Login error pop up
-    private void showErrorDialog(String title, String message) {
-        Alert alert = new Alert(AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
 }

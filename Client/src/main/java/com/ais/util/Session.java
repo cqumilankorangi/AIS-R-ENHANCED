@@ -10,7 +10,7 @@ import com.ais.model.RecruitModel;
 
 /**
  *
- * @author milan
+ * @author twati
  */
 public class Session {
 

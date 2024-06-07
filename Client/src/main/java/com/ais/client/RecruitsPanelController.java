@@ -97,7 +97,7 @@ public class RecruitsPanelController implements Initializable {
         txtPhoneNo.setText(loggedInRecruit.getPhoneNo());
         txtEmail.setText(loggedInRecruit.getEmail());
         LocalDate datetime = LocalDate.parse(loggedInRecruit.getInterviewDate(),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                DateTimeFormatter.ofPattern("d/MM/yyyy"));
         dtPkInvterviewDate.setValue(datetime);
         cmbQualification.setValue(loggedInRecruit.getQualificationLevel());
         cmbDepartment.setValue(loggedInRecruit.getDepartment());

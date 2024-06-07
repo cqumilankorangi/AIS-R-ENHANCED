@@ -18,8 +18,6 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
@@ -73,7 +71,6 @@ public class RecruitsRegistrationController implements Initializable {
 
             out.writeUTF("REGISTER");
             out.flush();
-            showSuccessDialog("Recruit");
 
             RecruitModel recruit = new RecruitModel(txtFullName.getText(), txtAddress.getText(),
                     txtPhoneNo.getText(), txtEmail.getText(), txtUserName.getText(),
@@ -106,14 +103,6 @@ public class RecruitsRegistrationController implements Initializable {
 
         // Set the items to the ComboBox
         cmbQualification.setItems(FXCollections.observableArrayList(qualifications));
-    }
-
-    private void showSuccessDialog(String userType) {
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Register Successful");
-        alert.setHeaderText(null);
-        alert.setContentText("Contratulations, new " + userType + " has been registered!");
-        alert.showAndWait();
     }
 
 }
