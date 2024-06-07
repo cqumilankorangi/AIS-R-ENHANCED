@@ -1,7 +1,6 @@
 package com.ais.model;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Objects;
 
 public class RecruitModel implements Serializable {
@@ -50,7 +49,7 @@ public class RecruitModel implements Serializable {
 
     public RecruitModel(int id, String fullName, String address, String phoneNo, String email, String userName, String password, String interviewDate, String qualificationLevel, String department) {
         this.id = id;
-        this.fullName = fullName;
+        this.fullName =  fullName;
         this.address = address;
         this.phoneNo = phoneNo;
         this.email = email;

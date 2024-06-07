@@ -137,9 +137,16 @@ class Connection extends Thread {
                         throw new UnknownError();
                     }
                     break;
-                case "GET":
-                    List<AdminModel> admins = dbManager.getAdmin();
-                    out.writeObject(admins);
+                case "GET_RECRUITS":
+                    out.writeObject(dbManager.getRecruits());
+                    out.flush();
+                    break;
+                case "GET_MANAGEMENTS":
+                    out.writeObject(dbManager.getManagements());
+                    out.flush();
+                    break;
+                case "MANAGEMENTS_DASHBOARD":
+                    out.writeObject(dbManager.getManagementDashboard());
                     out.flush();
                     break;
                 case "SEND_OTP":
@@ -150,6 +157,14 @@ class Connection extends Thread {
                     recruit = (RecruitModel) obj;
                     recruit = dbManager.getRecruitByUserName(recruit.getUserName());
                     out.writeObject(recruit);
+                    out.flush();
+                    break;
+                case "GET_RECRUITS_ORDER_BY_FULLNAME":
+                    out.writeObject(dbManager.getRecruitsOrderWithFullName());
+                    out.flush();
+                    break;
+                case "GET_RECRUITS_ORDER_BY_QUALIFICATION":
+                    out.writeObject(dbManager.getRecruitsOrderWithQualification());
                     out.flush();
                     break;
                 case "LOGIN_ADMIN":

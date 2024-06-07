@@ -1,7 +1,6 @@
 package com.ais.model;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 public class AdminModel implements Serializable {
 

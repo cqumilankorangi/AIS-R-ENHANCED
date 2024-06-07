@@ -5,6 +5,8 @@
 package com.ais.client;
 
 import com.ais.client.constraint.Constraints;
+import com.ais.model.DashboardDTO;
+import com.ais.model.ManagementModel;
 import com.ais.model.RecruitModel;
 import com.ais.util.Session;
 import java.io.DataOutputStream;
@@ -15,6 +17,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -23,7 +26,11 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 
 /**
@@ -67,7 +74,19 @@ public class ManangementPanelController implements Initializable {
     private Button report;
 
     @FXML
-    private ComboBox<String> sort;
+    private Label lblAerospace;
+
+    @FXML
+    private Label lblElectronic;
+
+    @FXML
+    private Label lblMechanical;
+
+    @FXML
+    private Label lblSoftware;
+
+    @FXML
+    private ComboBox<String> cmbSort;
 
     @FXML
     private Button update_recruits;
@@ -123,6 +142,51 @@ public class ManangementPanelController implements Initializable {
     @FXML
     private ComboBox<String> cmbUpdQualification;
 
+    @FXML
+    private TableView<RecruitModel> tblRecruit;
+
+    @FXML
+    private TableColumn<RecruitModel, String> clmAddress;
+
+    @FXML
+    private TableColumn<RecruitModel, String> clmBranch;
+
+    @FXML
+    private TableColumn<RecruitModel, String> clmContact;
+
+    @FXML
+    private TableColumn<RecruitModel, String> clmEmail;
+
+    @FXML
+    private TableColumn<RecruitModel, Integer> clmId;
+
+    @FXML
+    private TableColumn<RecruitModel, String> clmName;
+
+    @FXML
+    private TableColumn<RecruitModel, String> clmPosition;
+
+    @FXML
+    private TableView<ManagementModel> tblManagement;
+
+    @FXML
+    private TableColumn<ManagementModel, String> clmMgmAddress;
+
+    @FXML
+    private TableColumn<ManagementModel, String> clmMgmContact;
+
+    @FXML
+    private TableColumn<ManagementModel, String> clmMgmEmail;
+
+    @FXML
+    private TableColumn<ManagementModel, Integer> clmMgmId;
+
+    @FXML
+    private TableColumn<ManagementModel, String> clmMgmName;
+
+    @FXML
+    private TableColumn<ManagementModel, String> clmMgmPosition;
+
     private Socket socket = null;
     private ObjectInputStream in = null;
     private DataOutputStream out = null;
@@ -147,8 +211,21 @@ public class ManangementPanelController implements Initializable {
     }
 
     @FXML
-    void handleSort(ActionEvent event) {
-
+    void handleSort(ActionEvent event) throws IOException, ClassNotFoundException {
+        initSocket();
+        if (cmbSort.getValue().equals("Lastname Dec and Groupby Locaton")) {
+            out.writeUTF("GET_RECRUITS_ORDER_BY_FULLNAME");
+        } else {
+            out.writeUTF("GET_RECRUITS_ORDER_BY_QUALIFICATION");
+        }
+        out.flush();
+        outObj.writeObject(new RecruitModel());
+        outObj.flush();
+        List<RecruitModel> recruits = (List<RecruitModel>) in.readObject();
+        tblRecruit.getItems().clear();
+        if (recruits != null) {
+            mapRecuitTableColumns(recruits);
+        }
     }
 
     @FXML
@@ -184,7 +261,6 @@ public class ManangementPanelController implements Initializable {
             outObj.writeObject(authenticate);
             outObj.flush();
             RecruitModel recruit = (RecruitModel) in.readObject();
-            System.out.println("Object => " + recruit.toString());
             if (recruit != null) {
                 recruitId = recruit.getId();
                 txtUpdFullName.setText(recruit.getFullName());
@@ -194,7 +270,7 @@ public class ManangementPanelController implements Initializable {
                 txtUpdPhoneNo.setText(recruit.getPhoneNo());
                 txtUpdEmail.setText(recruit.getEmail());
                 LocalDate datetime = LocalDate.parse(recruit.getInterviewDate(),
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        DateTimeFormatter.ofPattern("d/MM/yyyy"));
                 dtPkUpdInterviewDate.setValue(datetime);
                 cmbUpdQualification.setValue(recruit.getQualificationLevel());
                 cmbDepartment.setValue(recruit.getDepartment());
@@ -248,8 +324,93 @@ public class ManangementPanelController implements Initializable {
         cmbAddQualification.setItems(FXCollections.observableArrayList(qualifications));
         cmbUpdQualification.setItems(FXCollections.observableArrayList(qualifications));
         // Set the items to the ComboBox
-        sort.setItems(FXCollections.observableArrayList(sortings));
+        cmbSort.setItems(FXCollections.observableArrayList(sortings));
         cmbDepartment.setItems(FXCollections.observableArrayList(departments));
+
+        try {
+            loadRecruits();
+            loadManagement();
+            loadDashBoard();
+        } catch (IOException | ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void loadDashBoard() throws IOException, ClassNotFoundException {
+        initSocket();
+        out.writeUTF("MANAGEMENTS_DASHBOARD");
+        out.flush();
+        outObj.writeObject(new DashboardDTO());
+        outObj.flush();
+        List<DashboardDTO> recruits = (List<DashboardDTO>) in.readObject();
+
+        if (recruits != null) {
+            mapManagmentDashboardValues(recruits);
+        }
+    }
+
+    private void loadRecruits() throws IOException, ClassNotFoundException {
+        initSocket();
+        out.writeUTF("GET_RECRUITS");
+        out.flush();
+        outObj.writeObject(new RecruitModel());
+        outObj.flush();
+        List<RecruitModel> recruits = (List<RecruitModel>) in.readObject();
+
+        if (recruits != null) {
+            mapRecuitTableColumns(recruits);
+        }
+    }
+
+    private void loadManagement() throws IOException, ClassNotFoundException {
+        initSocket();
+        out.writeUTF("GET_MANAGEMENTS");
+        out.flush();
+        outObj.writeObject(new ManagementModel());
+        outObj.flush();
+        List<ManagementModel> managments = (List<ManagementModel>) in.readObject();
+
+        if (managments != null) {
+            mapManagementTableColumns(managments);
+        }
+    }
+
+    private void mapManagmentDashboardValues(List<DashboardDTO> values) {
+        int noOfRecruits;
+        for (DashboardDTO value : values) {
+            noOfRecruits = value.getNoOfRecruits();
+            if (value.getDepartment().equalsIgnoreCase("Software")) {
+                lblSoftware.setText(String.valueOf(noOfRecruits));
+            } else if (value.getDepartment().equalsIgnoreCase("Aerospace")) {
+                lblAerospace.setText(String.valueOf(noOfRecruits));
+            } else if (value.getDepartment().equalsIgnoreCase("Mechanical")) {
+                lblMechanical.setText(String.valueOf(noOfRecruits));
+            } else if (value.getDepartment().equalsIgnoreCase("Electronics Engineering")) {
+                lblElectronic.setText(String.valueOf(noOfRecruits));
+            }
+        }
+
+    }
+
+    private void mapRecuitTableColumns(List<RecruitModel> recruits) {
+        clmId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        clmName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
+        clmAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
+        clmContact.setCellValueFactory(new PropertyValueFactory<>("phoneNo"));
+        clmEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        clmBranch.setCellValueFactory(new PropertyValueFactory<>("department"));
+        clmPosition.setCellValueFactory(new PropertyValueFactory<>("qualificationLevel"));
+        tblRecruit.getItems().addAll(recruits);
+    }
+
+    private void mapManagementTableColumns(List<ManagementModel> managments) {
+        clmMgmId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        clmMgmName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
+        clmMgmAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
+        clmMgmContact.setCellValueFactory(new PropertyValueFactory<>("phoneNo"));
+        clmMgmEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        clmMgmPosition.setCellValueFactory(new PropertyValueFactory<>("position"));
+        tblManagement.getItems().addAll(managments);
     }
 
     private void initSocket() throws IOException {

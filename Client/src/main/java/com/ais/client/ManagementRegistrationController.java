@@ -18,7 +18,6 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 
@@ -68,7 +67,6 @@ public class ManagementRegistrationController implements Initializable {
 
             out.writeUTF("REGISTER");
             out.flush();
-            showSuccessDialog("Management");
 
             ManagementModel management = new ManagementModel(txtFullName.getText(), txtAddress.getText(),
                     txtPhoneNo.getText(), txtEmail.getText(), txtUserName.getText(),
@@ -102,11 +100,4 @@ public class ManagementRegistrationController implements Initializable {
         cmbPosition.setItems(FXCollections.observableArrayList(positions));
     }
 
-    private void showSuccessDialog(String userType) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Register Successful");
-        alert.setHeaderText(null);
-        alert.setContentText("Contratulations, new " + userType + " has been registered!");
-        alert.showAndWait();
-    }
 }

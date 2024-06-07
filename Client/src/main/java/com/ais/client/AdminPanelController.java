@@ -250,7 +250,7 @@ public class AdminPanelController implements Initializable {
                 txtUpdPhoneNo.setText(recruit.getPhoneNo());
                 txtUpdEmail.setText(recruit.getEmail());
                 LocalDate datetime = LocalDate.parse(recruit.getInterviewDate(),
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        DateTimeFormatter.ofPattern("d/MM/yyyy"));
                 dtPkUpdInterviewDate.setValue(datetime);
                 cmbUpdQualification.setValue(recruit.getQualificationLevel());
             }
@@ -323,13 +323,11 @@ public class AdminPanelController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         String[] qualifications = {"Bachelors", "Masters", "PhD"};
-        String[] branches = {"Sydney", "Melbourne", "Perth", "Brisbane"};
 
         // Set the items to the ComboBox
         cmbAddQualification.setItems(FXCollections.observableArrayList(qualifications));
         cmbUpdQualification.setItems(FXCollections.observableArrayList(qualifications));
-        cmbBranch.setItems(FXCollections.observableArrayList(branches));
-
+        
         AdminModel logedInAdmin = Session.getInstance().getAdmin();
         txtFullName.setText(logedInAdmin.getFullName());
         txtAddress.setText(logedInAdmin.getAddress());

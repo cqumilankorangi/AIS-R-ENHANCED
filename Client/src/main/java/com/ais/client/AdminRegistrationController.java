@@ -13,7 +13,6 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
@@ -70,15 +69,14 @@ public class AdminRegistrationController implements Initializable {
 
             out.writeUTF("REGISTER");
             out.flush();
-            showSuccessDialog("Admin");
-
-            AdminModel admin = new AdminModel(txtFullName.getText(), txtAddress.getText(),
-                    txtPhoneNo.getText(), txtEmail.getText(), txtUserName.getText(),
+            
+            AdminModel admin = new AdminModel(txtFullName.getText(), txtAddress.getText(), 
+                    txtPhoneNo.getText(), txtEmail.getText(), txtUserName.getText(), 
                     txtPassword.getText(), cmbLevel.getValue(), cmbBranch.getValue());
-
+            
             outObj.writeObject(admin);
             outObj.flush();
-        } finally {
+        }  finally {
             if (in != null) {
                 in.close();
             }
@@ -102,14 +100,6 @@ public class AdminRegistrationController implements Initializable {
 
         cmbBranch.setItems(FXCollections.observableArrayList(branchs));
         cmbLevel.setItems(FXCollections.observableArrayList(levels));
-    }
-
-    private void showSuccessDialog(String userType) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Register Successful");
-        alert.setHeaderText(null);
-        alert.setContentText("Contratulations, new " + userType + " has been registered!");
-        alert.showAndWait();
     }
 
 }
