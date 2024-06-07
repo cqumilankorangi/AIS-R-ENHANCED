@@ -21,9 +21,9 @@ import java.util.logging.Logger;
 
 public class DBManager {
 
-    private static final String url = "jdbc:mysql://localhost:3306/ais";
+    private static final String url = "jdbc:mysql://localhost:3306/ais-r-db";
     private static final String user = "root";
-    private static final String password = "kina";
+    private static final String password = "pass";
 
     private Connection connection;
 

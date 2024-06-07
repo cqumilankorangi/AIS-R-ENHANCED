@@ -32,7 +32,7 @@ public class TCPServer {
         DBManager dbManager = null;
         try {
             // Setting up the server socket to listen on port 6789
-            int serverPort = 6789;
+            int serverPort = 2112;
             ServerSocket listenSocket = new ServerSocket(serverPort);
             dbManager = new DBManager();
 
